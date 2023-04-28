@@ -16,6 +16,15 @@ async fn tags() -> impl Responder {
     })
 }
 
+#[get("/api/posts/{id}")]
+async fn posts(id: web::Path<String>) -> impl Responder {
+    let contents = fs::read_to_string(format!("content/posts/published/{id}"))
+        .expect("Something went wrong while reading the file");
+    HttpResponse::Ok().json(Message {
+        message: contents
+    })
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let bind_address = "127.0.0.1:8080";
@@ -31,6 +40,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors)
             .service(tags)
+            .service(posts)
     })
     .bind(bind_address)?
     .run()
