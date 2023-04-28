@@ -10,19 +10,20 @@ struct Message {
 
 #[get("/api/tags")]
 async fn tags() -> impl Responder {
-    let contents = fs::read_to_string("content/tags").expect("Something went wrong while reading the file");
-    HttpResponse::Ok().json(Message {
-        message: contents
-    })
+    let contents =
+        fs::read_to_string("content/tags").expect("Something went wrong while reading the file");
+    HttpResponse::Ok().json(Message { message: contents })
 }
 
 #[get("/api/posts/{id}")]
 async fn posts(id: web::Path<String>) -> impl Responder {
-    let contents = fs::read_to_string(format!("content/posts/published/{id}"))
+    let whitelist = "abcdefghijklmnopqrstuvwxyz0123456789-";
+
+    let mut sanitized = id;
+    sanitized.retain(|c| whitelist.contains(c));
+    let contents = fs::read_to_string(format!("content/posts/published/{sanitized}.html"))
         .expect("Something went wrong while reading the file");
-    HttpResponse::Ok().json(Message {
-        message: contents
-    })
+    HttpResponse::Ok().json(Message { message: contents })
 }
 
 #[actix_web::main]
@@ -37,10 +38,7 @@ async fn main() -> std::io::Result<()> {
             .allow_any_method()
             .allow_any_header();
 
-        App::new()
-            .wrap(cors)
-            .service(tags)
-            .service(posts)
+        App::new().wrap(cors).service(tags).service(posts)
     })
     .bind(bind_address)?
     .run()
