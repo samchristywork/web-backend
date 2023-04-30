@@ -10,8 +10,16 @@ struct Message {
 
 #[get("/api/tags")]
 async fn tags() -> impl Responder {
-    let contents =
-        fs::read_to_string("content/tags").expect("Something went wrong while reading the file");
+    let mut contents = String::new();
+    for entry in fs::read_dir("content/posts/published").expect("Something went wrong while reading the directory") {
+        let entry = entry.expect("Something went wrong while reading the entry");
+        let path = entry.path();
+        let file = fs::read_to_string(path).expect("Something went wrong while reading the file");
+        let lines: Vec<&str> = file.split("\n").collect();
+
+        contents+=lines[2].split(":").last().unwrap().trim().replace(", ", "\n").as_str();
+        contents+="\n";
+    }
     HttpResponse::Ok().json(Message { message: contents })
 }
 
