@@ -11,7 +11,7 @@ struct Message {
 #[get("/api/tags")]
 async fn tags() -> impl Responder {
     let mut contents = String::new();
-    for entry in fs::read_dir("content/posts/published")
+    for entry in fs::read_dir("web-content/posts/published")
         .expect("Something went wrong while reading the directory")
     {
         let entry = entry.expect("Something went wrong while reading the entry");
@@ -37,7 +37,7 @@ async fn posts(id: web::Path<String>) -> impl Responder {
 
     let mut sanitized = id;
     sanitized.retain(|c| whitelist.contains(c));
-    let contents = fs::read_to_string(format!("content/posts/published/{sanitized}.html"))
+    let contents = fs::read_to_string(format!("web-content/posts/published/{sanitized}.html"))
         .expect("Something went wrong while reading the file");
     HttpResponse::Ok().json(Message { message: contents })
 }
